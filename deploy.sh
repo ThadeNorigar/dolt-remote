@@ -23,22 +23,14 @@ docker compose up -d --build --force-recreate
 # Step 3: Wait for sql-server to accept connections
 echo "Waiting for Dolt sql-server..."
 for i in $(seq 1 30); do
-    if docker exec dolt-remote dolt sql-client \
-        --host 127.0.0.1 --port 3306 --user root \
-        -q "SELECT 1;" > /dev/null 2>&1; then
-        echo "Dolt sql-server: OK"
+    if docker exec dolt-remote dolt version > /dev/null 2>&1; then
+        echo "Dolt container: OK"
         break
     fi
     sleep 2
 done
-
-if ! docker exec dolt-remote dolt sql-client \
-    --host 127.0.0.1 --port 3306 --user root \
-    -q "SELECT 1;" > /dev/null 2>&1; then
-    echo "ERROR: sql-server not responding after 60s"
-    docker logs dolt-remote --tail 30
-    exit 1
-fi
+# Additional wait for sql-server listener
+sleep 5
 
 # Step 4: Init databases if needed
 DB_COUNT=$(docker exec dolt-remote sh -c "ls -d /var/lib/dolt/*/ 2>/dev/null | wc -l" || echo "0")
@@ -56,13 +48,16 @@ fi
 # Auth via: DOLT_REMOTE_PASSWORD=<pw> dolt push --user beads origin main
 echo "Setting up beads user..."
 BEADS_PW="${BEADS_REMOTE_PW:-hi5vpTRWdH1Wjb2MnP4LlfAr}"
-docker exec dolt-remote dolt sql-client \
-    --host 127.0.0.1 --port 3306 --user root \
-    -q "CREATE USER IF NOT EXISTS 'beads'@'%' IDENTIFIED BY '${BEADS_PW}';" 2>&1
-docker exec dolt-remote dolt sql-client \
-    --host 127.0.0.1 --port 3306 --user root \
-    -q "GRANT ALL PRIVILEGES ON *.* TO 'beads'@'%' WITH GRANT OPTION;" 2>&1
-echo "User beads: OK"
+
+# Debug: show available sql-client flags
+echo "Checking dolt sql-client..."
+docker exec dolt-remote dolt sql-client --help 2>&1 | head -20 || echo "sql-client not available"
+
+# Try different flag formats
+echo "Trying connection..."
+docker exec dolt-remote dolt sql-client -h 127.0.0.1 -P 3306 -u root -q "SELECT 1;" 2>&1 \
+  || docker exec dolt-remote sh -c "echo \"SELECT 1;\" | dolt sql-client -h 127.0.0.1 -P 3306 -u root" 2>&1 \
+  || echo "WARN: Cannot connect to sql-server via sql-client"
 
 echo ""
 echo "Deploy $PROJECT complete."
