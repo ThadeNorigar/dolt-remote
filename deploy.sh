@@ -39,23 +39,30 @@ fi
 echo "Rebuilding container..."
 docker compose up -d --build
 
-# Step 4: Wait for health
-echo "Waiting for Dolt remotesapi..."
-for i in $(seq 1 15); do
+# Step 4: Wait for health (check SQL port inside container)
+echo "Waiting for Dolt sql-server..."
+for i in $(seq 1 20); do
     if docker exec dolt-remote dolt version > /dev/null 2>&1; then
-        echo "Dolt: OK ($(docker exec dolt-remote dolt version))"
-        echo ""
-
-        # Count databases
-        DB_COUNT=$(docker exec dolt-remote ls /var/lib/dolt/ 2>/dev/null | wc -l)
-        echo "Databases: $DB_COUNT"
+        echo "Dolt: OK"
         echo ""
         echo "Deploy $PROJECT complete."
         exit 0
     fi
-    sleep 2
+    # Alternative: check if port 3306 is listening
+    if docker exec dolt-remote sh -c "ls /var/lib/dolt/ 2>/dev/null" > /dev/null 2>&1; then
+        # Container is up, check if sql-server responds
+        if docker exec dolt-remote sh -c "echo 'SELECT 1' | dolt sql 2>/dev/null" > /dev/null 2>&1; then
+            echo "Dolt SQL: OK"
+            DB_COUNT=$(docker exec dolt-remote sh -c "ls -d /var/lib/dolt/*/ 2>/dev/null | wc -l")
+            echo "Databases: $DB_COUNT"
+            echo ""
+            echo "Deploy $PROJECT complete."
+            exit 0
+        fi
+    fi
+    sleep 3
 done
 
-echo "ERROR: Health check failed after 30s"
-docker logs dolt-remote --tail 20
+echo "ERROR: Health check failed after 60s"
+docker logs dolt-remote --tail 30
 exit 1
