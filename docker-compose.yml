@@ -20,8 +20,7 @@ services:
       - "traefik.http.routers.dolt.entrypoints=websecure"
       - "traefik.http.routers.dolt.tls.certresolver=letsencrypt"
       - "traefik.http.services.dolt.loadbalancer.server.port=8080"
-      - "traefik.http.routers.dolt.middlewares=dolt-auth"
-      - "traefik.http.middlewares.dolt-auth.basicauth.users=${BASIC_AUTH_USER}"
+      - "traefik.http.services.dolt.loadbalancer.server.scheme=h2c"
     networks:
       - proxy
 
