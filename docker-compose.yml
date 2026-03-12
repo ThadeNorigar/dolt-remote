@@ -1,6 +1,6 @@
 services:
   dolt:
-    image: dolthub/dolt:1.43.0
+    image: dolthub/dolt:1.83.5
     container_name: dolt-remote
     restart: unless-stopped
     command: >
