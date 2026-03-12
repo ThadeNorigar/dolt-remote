@@ -15,10 +15,24 @@ echo "Pulling latest code..."
 git checkout -- .
 git pull origin main
 
-# Step 2: Check .env
+# Step 2: Check .env — auto-generate if missing
 if [ ! -f .env ]; then
-    echo "ERROR: .env missing. Create it with BASIC_AUTH_USER=beads:\$\$apr1\$\$..."
-    exit 1
+    echo "Generating .env with BasicAuth credentials..."
+    # Generate random password and htpasswd hash
+    BEADS_PW=$(head -c 18 /dev/urandom | base64 | tr -dc 'a-zA-Z0-9' | head -c 24)
+    # Use openssl for apr1 hash (available on most Linux)
+    HASH=$(openssl passwd -apr1 "$BEADS_PW")
+    # Docker compose needs $$ to escape $ signs
+    ESCAPED_HASH=$(echo "$HASH" | sed 's/\$/\$\$/g')
+    echo "BASIC_AUTH_USER=beads:${ESCAPED_HASH}" > .env
+    echo ""
+    echo "========================================="
+    echo "GENERATED CREDENTIALS (save these!):"
+    echo "  User: beads"
+    echo "  Password: $BEADS_PW"
+    echo "  URL: https://beads:${BEADS_PW}@dolt.adrianphilipp.de/<db>"
+    echo "========================================="
+    echo ""
 fi
 
 # Step 3: Rebuild container
