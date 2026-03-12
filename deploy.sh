@@ -15,27 +15,7 @@ echo "Pulling latest code..."
 git checkout -- .
 git pull origin main
 
-# Step 2: Check .env — auto-generate if missing
-if [ ! -f .env ]; then
-    echo "Generating .env with BasicAuth credentials..."
-    # Generate random password and htpasswd hash
-    BEADS_PW=$(head -c 18 /dev/urandom | base64 | tr -dc 'a-zA-Z0-9' | head -c 24)
-    # Use openssl for apr1 hash (available on most Linux)
-    HASH=$(openssl passwd -apr1 "$BEADS_PW")
-    # Docker compose needs $$ to escape $ signs
-    ESCAPED_HASH=$(echo "$HASH" | sed 's/\$/\$\$/g')
-    echo "BASIC_AUTH_USER=beads:${ESCAPED_HASH}" > .env
-    echo ""
-    echo "========================================="
-    echo "GENERATED CREDENTIALS (save these!):"
-    echo "  User: beads"
-    echo "  Password: $BEADS_PW"
-    echo "  URL: https://beads:${BEADS_PW}@dolt.adrianphilipp.de/<db>"
-    echo "========================================="
-    echo ""
-fi
-
-# Step 3: Rebuild container (force-recreate to ensure network attachment)
+# Step 2: Rebuild container (force-recreate to ensure network attachment)
 echo "Rebuilding container..."
 docker compose down 2>/dev/null
 docker compose up -d --build --force-recreate
@@ -64,6 +44,12 @@ if [ "$DB_COUNT" -lt 5 ]; then
     docker cp "$DIR/init-databases.sh" dolt-remote:/init-databases.sh
     docker exec dolt-remote bash /init-databases.sh
 fi
+
+# Step 6: Grant CLONE_ADMIN for remotesapi push/pull
+echo "Setting permissions..."
+docker exec dolt-remote dolt sql \
+    --data-dir /var/lib/dolt \
+    -q "GRANT CLONE_ADMIN ON *.* TO root@'%';" 2>/dev/null || true
 
 echo ""
 echo "Deploy $PROJECT complete."
