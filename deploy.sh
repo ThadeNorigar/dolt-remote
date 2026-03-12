@@ -35,9 +35,10 @@ if [ ! -f .env ]; then
     echo ""
 fi
 
-# Step 3: Rebuild container
+# Step 3: Rebuild container (force-recreate to ensure network attachment)
 echo "Rebuilding container..."
-docker compose up -d --build
+docker compose down 2>/dev/null
+docker compose up -d --build --force-recreate
 
 # Step 4: Wait for health
 echo "Waiting for Dolt sql-server..."

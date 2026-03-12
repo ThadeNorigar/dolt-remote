@@ -13,6 +13,7 @@ services:
       - dolt_data:/var/lib/dolt
     expose:
       - "8080"
+      - "3306"
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.dolt.rule=Host(`dolt.adrianphilipp.de`)"
