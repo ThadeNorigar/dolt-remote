@@ -9,8 +9,9 @@ services:
     volumes:
       - dolt_data:/var/lib/dolt
       - ./entrypoint.sh:/entrypoint.sh:ro
+    ports:
+      - "50051:8080"
     expose:
-      - "8080"
       - "3306"
     labels:
       - "traefik.enable=true"
