@@ -44,6 +44,17 @@ echo "Waiting for Dolt sql-server..."
 for i in $(seq 1 20); do
     if docker exec dolt-remote dolt version > /dev/null 2>&1; then
         echo "Dolt: OK"
+
+        # Init databases if none exist
+        DB_COUNT=$(docker exec dolt-remote sh -c "ls -d /var/lib/dolt/*/ 2>/dev/null | wc -l" || echo "0")
+        if [ "$DB_COUNT" -eq 0 ] || [ "$DB_COUNT" -lt 5 ]; then
+            echo "Initializing databases..."
+            docker cp "$DIR/init-databases.sh" dolt-remote:/init-databases.sh
+            docker exec dolt-remote bash /init-databases.sh
+        else
+            echo "Databases: $DB_COUNT"
+        fi
+
         echo ""
         echo "Deploy $PROJECT complete."
         exit 0
