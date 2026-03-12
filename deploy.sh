@@ -45,10 +45,10 @@ if [ "$DB_COUNT" -lt 5 ]; then
     docker exec dolt-remote bash /init-databases.sh
 fi
 
-# Step 6: Grant CLONE_ADMIN for remotesapi push/pull
+# Step 6: Grant CLONE_ADMIN for remotesapi push/pull (via running sql-server)
 echo "Setting permissions..."
 docker exec dolt-remote dolt sql \
-    --data-dir /var/lib/dolt \
+    --host 127.0.0.1 --port 3306 --user root \
     -q "GRANT CLONE_ADMIN ON *.* TO root@'%';" 2>/dev/null || true
 
 echo ""
