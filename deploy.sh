@@ -39,41 +39,30 @@ fi
 echo "Rebuilding container..."
 docker compose up -d --build
 
-# Step 4: Wait for health (check SQL port inside container)
+# Step 4: Wait for health
 echo "Waiting for Dolt sql-server..."
 for i in $(seq 1 20); do
     if docker exec dolt-remote dolt version > /dev/null 2>&1; then
         echo "Dolt: OK"
-
-        # Init databases if none exist
-        DB_COUNT=$(docker exec dolt-remote sh -c "ls -d /var/lib/dolt/*/ 2>/dev/null | wc -l" || echo "0")
-        if [ "$DB_COUNT" -eq 0 ] || [ "$DB_COUNT" -lt 5 ]; then
-            echo "Initializing databases..."
-            docker cp "$DIR/init-databases.sh" dolt-remote:/init-databases.sh
-            docker exec dolt-remote bash /init-databases.sh
-        else
-            echo "Databases: $DB_COUNT"
-        fi
-
-        echo ""
-        echo "Deploy $PROJECT complete."
-        exit 0
-    fi
-    # Alternative: check if port 3306 is listening
-    if docker exec dolt-remote sh -c "ls /var/lib/dolt/ 2>/dev/null" > /dev/null 2>&1; then
-        # Container is up, check if sql-server responds
-        if docker exec dolt-remote sh -c "echo 'SELECT 1' | dolt sql 2>/dev/null" > /dev/null 2>&1; then
-            echo "Dolt SQL: OK"
-            DB_COUNT=$(docker exec dolt-remote sh -c "ls -d /var/lib/dolt/*/ 2>/dev/null | wc -l")
-            echo "Databases: $DB_COUNT"
-            echo ""
-            echo "Deploy $PROJECT complete."
-            exit 0
-        fi
+        break
     fi
     sleep 3
 done
 
-echo "ERROR: Health check failed after 60s"
-docker logs dolt-remote --tail 30
-exit 1
+if ! docker exec dolt-remote dolt version > /dev/null 2>&1; then
+    echo "ERROR: Health check failed after 60s"
+    docker logs dolt-remote --tail 30
+    exit 1
+fi
+
+# Step 5: Init databases if needed
+DB_COUNT=$(docker exec dolt-remote sh -c "ls -d /var/lib/dolt/*/ 2>/dev/null | wc -l" || echo "0")
+echo "Databases: $DB_COUNT"
+if [ "$DB_COUNT" -lt 5 ]; then
+    echo "Initializing databases..."
+    docker cp "$DIR/init-databases.sh" dolt-remote:/init-databases.sh
+    docker exec dolt-remote bash /init-databases.sh
+fi
+
+echo ""
+echo "Deploy $PROJECT complete."
