@@ -13,13 +13,6 @@ services:
       - "50051:8080"
     expose:
       - "3306"
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.dolt.rule=Host(`dolt.adrianphilipp.de`)"
-      - "traefik.http.routers.dolt.entrypoints=websecure"
-      - "traefik.http.routers.dolt.tls.certresolver=letsencrypt"
-      - "traefik.http.services.dolt.loadbalancer.server.port=8080"
-      - "traefik.http.services.dolt.loadbalancer.server.scheme=h2c"
     networks:
       - proxy
 
