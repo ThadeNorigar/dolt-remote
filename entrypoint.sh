@@ -4,7 +4,8 @@
 set -e
 
 DATA_DIR="/var/lib/dolt"
-BEADS_PW="${BEADS_REMOTE_PW:-hi5vpTRWdH1Wjb2MnP4LlfAr}"
+BEADS_PW="${BEADS_REMOTE_PW}"
+BEADS_USR="${BEADS_REMOTE_USR:-adrian}"
 
 # Ensure global dolt config exists
 dolt config --global --add user.name "dolt-remote" 2>/dev/null || true
@@ -18,10 +19,11 @@ cd "$DATA_DIR"
 FIRST_DB=$(ls -d */ 2>/dev/null | head -1)
 if [ -n "$FIRST_DB" ]; then
     cd "$DATA_DIR/$FIRST_DB"
-    dolt sql -q "CREATE USER IF NOT EXISTS 'beads'@'%' IDENTIFIED BY '${BEADS_PW}';" 2>/dev/null || true
-    dolt sql -q "GRANT ALL PRIVILEGES ON *.* TO 'beads'@'%' WITH GRANT OPTION;" 2>/dev/null || true
-    dolt sql -q "GRANT CLONE_ADMIN ON *.* TO 'beads'@'%';" 2>/dev/null || true
-    echo "User beads: configured"
+    dolt sql -q "CREATE USER IF NOT EXISTS '${BEADS_USR}'@'%' IDENTIFIED BY '${BEADS_PW}';" 2>/dev/null || true
+    dolt sql -q "ALTER USER '${BEADS_USR}'@'%' IDENTIFIED BY '${BEADS_PW}';" 2>/dev/null || true
+    dolt sql -q "GRANT ALL PRIVILEGES ON *.* TO '${BEADS_USR}'@'%' WITH GRANT OPTION;" 2>/dev/null || true
+    dolt sql -q "GRANT CLONE_ADMIN ON *.* TO '${BEADS_USR}'@'%';" 2>/dev/null || true
+    echo "User ${BEADS_USR}: configured"
 fi
 
 # Start sql-server (exec replaces this process)
