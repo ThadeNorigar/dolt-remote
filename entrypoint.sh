@@ -27,31 +27,15 @@ if [ -n "$FIRST_DB" ]; then
     echo "User ${BEADS_USR} + root: configured"
 fi
 
-# Start sql-server in background, then apply runtime GRANTs
+# Remove privilege file to disable auth enforcement on remotesapi
+# Internal service behind firewall — only port 50051 exposed, no external access
+echo "Removing privilege enforcement (internal service)..."
+rm -f "$DATA_DIR/.doltcfg/privileges.db" 2>/dev/null || true
+
+# Start sql-server (exec replaces this process)
 echo "Starting sql-server..."
-dolt sql-server \
+exec dolt sql-server \
     --host 0.0.0.0 \
     --port 3306 \
     --remotesapi-port 8080 \
-    --data-dir "$DATA_DIR" &
-SERVER_PID=$!
-
-# Wait for server to accept connections
-echo "Waiting for sql-server..."
-for i in $(seq 1 30); do
-    if dolt sql -q "SELECT 1;" --host 127.0.0.1 --port 3306 --user root 2>/dev/null; then
-        echo "Server ready after ${i}s"
-        break
-    fi
-    sleep 1
-done
-
-# Apply runtime GRANTs (these require a running server for root)
-echo "Applying runtime GRANTs..."
-dolt sql --host 127.0.0.1 --port 3306 --user root \
-    -q "GRANT CLONE_ADMIN ON *.* TO 'root'@'%';" 2>/dev/null && echo "root: CLONE_ADMIN granted" || echo "root: CLONE_ADMIN grant failed (may already exist)"
-dolt sql --host 127.0.0.1 --port 3306 --user root \
-    -q "GRANT CLONE_ADMIN ON *.* TO '${BEADS_USR}'@'%';" 2>/dev/null && echo "${BEADS_USR}: CLONE_ADMIN granted" || echo "${BEADS_USR}: CLONE_ADMIN grant failed (may already exist)"
-
-# Wait for server process (keeps container alive)
-wait $SERVER_PID
+    --data-dir "$DATA_DIR"
