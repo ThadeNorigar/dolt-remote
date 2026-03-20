@@ -23,7 +23,8 @@ if [ -n "$FIRST_DB" ]; then
     dolt sql -q "ALTER USER '${BEADS_USR}'@'%' IDENTIFIED BY '${BEADS_PW}';" 2>/dev/null || true
     dolt sql -q "GRANT ALL PRIVILEGES ON *.* TO '${BEADS_USR}'@'%' WITH GRANT OPTION;" 2>/dev/null || true
     dolt sql -q "GRANT CLONE_ADMIN ON *.* TO '${BEADS_USR}'@'%';" 2>/dev/null || true
-    echo "User ${BEADS_USR}: configured"
+    dolt sql -q "GRANT CLONE_ADMIN ON *.* TO 'root'@'%';" 2>/dev/null || true
+    echo "User ${BEADS_USR} + root: configured"
 fi
 
 # Start sql-server (exec replaces this process)
