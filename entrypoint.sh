@@ -18,4 +18,5 @@ exec dolt sql-server \
     --host 0.0.0.0 \
     --port 3306 \
     --remotesapi-port 8080 \
+    --privilege-file=/dev/null \
     --data-dir "$DATA_DIR"
