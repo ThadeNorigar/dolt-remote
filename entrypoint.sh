@@ -29,6 +29,10 @@ if [ -f /init-databases.sh ]; then
     [ "$CREATED" -gt 0 ] && echo "Created $CREATED new database(s)." || echo "All databases exist."
 fi
 
+# List all databases
+echo "Databases on disk:"
+ls -1 "$DATA_DIR" | sort
+
 # Start sql-server in background
 echo "Starting sql-server..."
 dolt sql-server \
