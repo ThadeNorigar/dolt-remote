@@ -39,6 +39,7 @@ fi
 # Step 4: Init databases if needed
 DB_COUNT=$(docker exec dolt-remote sh -c "ls -d /var/lib/dolt/*/ 2>/dev/null | wc -l" || echo "0")
 echo "Databases: $DB_COUNT"
+docker exec dolt-remote sh -c "ls -1 /var/lib/dolt/ | sort" 2>/dev/null || true
 if [ "$DB_COUNT" -lt 5 ]; then
     echo "Initializing databases..."
     docker cp "$DIR/init-databases.sh" dolt-remote:/init-databases.sh
