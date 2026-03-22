@@ -9,6 +9,7 @@ DATABASES=(
   K2SO
   app
   k2board
+  k2beads
   k2vault
   telegram
   workshops
