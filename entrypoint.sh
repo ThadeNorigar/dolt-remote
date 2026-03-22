@@ -31,6 +31,24 @@ for i in $(seq 1 30); do
         $DOLT_SQL -q "GRANT CLONE_ADMIN ON *.* TO 'root'@'%';" 2>/dev/null && echo "root@%: CLONE_ADMIN OK" || true
         $DOLT_SQL -q "GRANT CLONE_ADMIN ON *.* TO 'root'@'localhost';" 2>/dev/null && echo "root@localhost: CLONE_ADMIN OK" || true
 
+        # Auto-create missing databases from init-databases.sh list
+        if [ -f /init-databases.sh ]; then
+            source <(grep -A100 '^DATABASES=' /init-databases.sh | head -n 100)
+            CREATED=0
+            for db in "${DATABASES[@]}"; do
+                if [ ! -d "$DATA_DIR/$db/.dolt" ]; then
+                    echo -n "CREATE: $db ... "
+                    mkdir -p "$DATA_DIR/$db"
+                    cd "$DATA_DIR/$db"
+                    dolt init --name "beads" --email "beads@adrianphilipp.de" >/dev/null 2>&1
+                    cd "$DATA_DIR"
+                    echo "OK"
+                    CREATED=$((CREATED + 1))
+                fi
+            done
+            [ "$CREATED" -gt 0 ] && echo "Created $CREATED new database(s)." || echo "All databases exist."
+        fi
+
         break
     fi
     sleep 1
