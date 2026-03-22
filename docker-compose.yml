@@ -9,6 +9,7 @@ services:
     volumes:
       - dolt_data:/var/lib/dolt
       - ./entrypoint.sh:/entrypoint.sh:ro
+      - ./init-databases.sh:/init-databases.sh:ro
     ports:
       - "50051:8080"
     expose:
