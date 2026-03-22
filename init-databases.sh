@@ -1,36 +1,40 @@
 #!/bin/bash
 # Creates empty Dolt databases for all Beads projects.
-# Run on server: docker exec -it dolt-remote bash /init-databases.sh
-# Or copy into container first: docker cp init-databases.sh dolt-remote:/init-databases.sh
+# Names MUST match dolt_database in each project's .beads/metadata.json.
+# Auto-executed on container start via entrypoint.sh.
 
 set -e
 
 DATABASES=(
+  # K2SO ecosystem
   K2SO
   app
-  k2board
   k2beads
+  k2board
   k2vault
   telegram
-  workshops
+  # StudioProjects
   alphina
   apccoachingsuite
   apcinsights
-  claude-updater
+  beads_mira
+  beads_pvs
+  claude_updater
   confluenceimporter
-  disg-app
-  fhir-pvs-dummy
-  insights-database
+  disg_app
+  fhir_pvs_dummy
+  insights_database
   kalo
   mcnzulassungscockpit
-  beads_mira
-  shadowrungamemaster
+  mentor
   shadowrunbattlemap
+  shadowrungamemaster
   templatedjangowebapp
   tetrisandroid
   transcriptioneer
-  vibedtoolingplatform
-  zaehler-ki
+  vtp
+  workshops
+  zaehler_ki
 )
 
 DATA_DIR="/var/lib/dolt"
