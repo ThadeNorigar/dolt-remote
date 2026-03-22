@@ -6,15 +6,9 @@
 set -e
 
 DATABASES=(
-  # K2SO ecosystem
   K2SO
-  app
-  k2beads
-  k2board
-  k2vault
-  telegram
-  # StudioProjects
   alphina
+  app
   apccoachingsuite
   apcinsights
   beads_mira
@@ -24,11 +18,15 @@ DATABASES=(
   disg_app
   fhir_pvs_dummy
   insights_database
+  k2beads
+  k2board
+  k2vault
   kalo
   mcnzulassungscockpit
   mentor
   shadowrunbattlemap
   shadowrungamemaster
+  telegram
   templatedjangowebapp
   tetrisandroid
   transcriptioneer

@@ -25,7 +25,7 @@ if [ -f /init-databases.sh ]; then
             echo "OK"
             CREATED=$((CREATED + 1))
         fi
-    done < <(sed -n '/^DATABASES=(/,/)/{ /^DATABASES=(/d; /)/d; s/^[[:space:]]*//; s/[[:space:]]*$//; p }' /init-databases.sh)
+    done < <(sed -n '/^DATABASES=(/,/)/{ /^DATABASES=(/d; /)/d; s/^[[:space:]]*//; s/[[:space:]]*$//; /^$/d; /^#/d; p }' /init-databases.sh)
     [ "$CREATED" -gt 0 ] && echo "Created $CREATED new database(s)." || echo "All databases exist."
 fi
 
