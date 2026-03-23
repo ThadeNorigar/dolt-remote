@@ -33,15 +33,16 @@ fi
 echo "Databases on disk:"
 ls -1 "$DATA_DIR" | sort
 
-# Pull from external remotes BEFORE starting server (CLI mode, env vars work)
-if [ -d "$DATA_DIR/beads_mira/.dolt" ]; then
+# Pull from external remotes BEFORE starting server
+# Note: dolt requires --user flag (not DOLT_REMOTE_USER env var)
+if [ -d "$DATA_DIR/beads_mira/.dolt" ] && [ -n "$DOLT_REMOTE_USER" ] && [ -n "$DOLT_REMOTE_PASSWORD" ]; then
     echo "Pulling beads_mira from cognovis..."
     cd "$DATA_DIR/beads_mira"
     dolt config --local --add user.name "dolt-remote" 2>/dev/null || true
     dolt config --local --add user.email "dolt@adrianphilipp.de" 2>/dev/null || true
-    # Add remote if missing
     dolt remote add cognovis "https://dolt.cognovis.de/beads_mira" 2>/dev/null || true
-    dolt pull cognovis main 2>&1 && echo "beads_mira: pull OK" || echo "beads_mira: pull failed (continuing)"
+    dolt fetch --user "$DOLT_REMOTE_USER" cognovis 2>&1 && echo "beads_mira: fetch OK" || echo "beads_mira: fetch failed (continuing)"
+    dolt merge cognovis/main --author "dolt-remote <dolt@adrianphilipp.de>" 2>&1 && echo "beads_mira: merge OK" || echo "beads_mira: merge skipped (up to date or conflict)"
     cd "$DATA_DIR"
 fi
 
