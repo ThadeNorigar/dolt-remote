@@ -51,6 +51,7 @@ for i in $(seq 1 30); do
         # Ensure root@% exists with full privileges + CLONE_ADMIN
         DOLT_SQL="dolt --host 127.0.0.1 --port 3306 --user root --password '' --no-tls sql"
         $DOLT_SQL -q "CREATE USER IF NOT EXISTS 'root'@'%';" 2>/dev/null || true
+        $DOLT_SQL -q "ALTER USER 'root'@'%' IDENTIFIED BY '';" 2>/dev/null || true
         $DOLT_SQL -q "GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' WITH GRANT OPTION;" 2>/dev/null || true
         $DOLT_SQL -q "GRANT CLONE_ADMIN ON *.* TO 'root'@'%';" 2>/dev/null && echo "root@%: CLONE_ADMIN OK" || true
         $DOLT_SQL -q "GRANT CLONE_ADMIN ON *.* TO 'root'@'localhost';" 2>/dev/null && echo "root@localhost: CLONE_ADMIN OK" || true
