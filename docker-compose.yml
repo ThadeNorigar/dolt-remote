@@ -7,7 +7,7 @@ services:
     environment:
       - BEADS_REMOTE_PW=${BEADS_REMOTE_PW:-hi5vpTRWdH1Wjb2MnP4LlfAr}
       - DOLT_REMOTE_PASSWORD=${BEADS_REMOTE_PW:-hi5vpTRWdH1Wjb2MnP4LlfAr}
-      - DOLT_REMOTE_USER=beads
+      - DOLT_REMOTE_USER=adrian
     volumes:
       - dolt_data:/var/lib/dolt
       - ./entrypoint.sh:/entrypoint.sh:ro
