@@ -56,6 +56,9 @@ for i in $(seq 1 30); do
         $DOLT_SQL -q "GRANT CLONE_ADMIN ON *.* TO 'root'@'%';" 2>/dev/null && echo "root@%: CLONE_ADMIN OK" || true
         $DOLT_SQL -q "GRANT CLONE_ADMIN ON *.* TO 'root'@'localhost';" 2>/dev/null && echo "root@localhost: CLONE_ADMIN OK" || true
 
+        # Configure cognovis remote for beads_mira (external Dolt server)
+        $DOLT_SQL -q "USE beads_mira; CALL DOLT_REMOTE('add', 'cognovis', 'https://dolt.cognovis.de/beads_mira');" 2>/dev/null && echo "beads_mira: cognovis remote OK" || echo "beads_mira: cognovis remote already exists or failed"
+
         break
     fi
     sleep 1
