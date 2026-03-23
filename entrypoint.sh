@@ -33,6 +33,18 @@ fi
 echo "Databases on disk:"
 ls -1 "$DATA_DIR" | sort
 
+# Pull from external remotes BEFORE starting server (CLI mode, env vars work)
+if [ -d "$DATA_DIR/beads_mira/.dolt" ]; then
+    echo "Pulling beads_mira from cognovis..."
+    cd "$DATA_DIR/beads_mira"
+    dolt config --local --add user.name "dolt-remote" 2>/dev/null || true
+    dolt config --local --add user.email "dolt@adrianphilipp.de" 2>/dev/null || true
+    # Add remote if missing
+    dolt remote add cognovis "https://dolt.cognovis.de/beads_mira" 2>/dev/null || true
+    dolt pull cognovis main 2>&1 && echo "beads_mira: pull OK" || echo "beads_mira: pull failed (continuing)"
+    cd "$DATA_DIR"
+fi
+
 # Start sql-server in background
 echo "Starting sql-server..."
 dolt sql-server \
