@@ -45,11 +45,11 @@ SERVER_PID=$!
 # Wait for server to accept connections and grant permissions
 echo "Waiting for sql-server..."
 for i in $(seq 1 30); do
-    if dolt --host 127.0.0.1 --port 3306 --user root --no-tls sql -q "SELECT 1" >/dev/null 2>&1; then
+    if dolt --host 127.0.0.1 --port 3306 --user root --password "" --no-tls sql -q "SELECT 1" >/dev/null 2>&1; then
         echo "Server ready after ${i}s."
 
         # Ensure root@% exists with full privileges + CLONE_ADMIN
-        DOLT_SQL="dolt --host 127.0.0.1 --port 3306 --user root --no-tls sql"
+        DOLT_SQL="dolt --host 127.0.0.1 --port 3306 --user root --password '' --no-tls sql"
         $DOLT_SQL -q "CREATE USER IF NOT EXISTS 'root'@'%';" 2>/dev/null || true
         $DOLT_SQL -q "GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' WITH GRANT OPTION;" 2>/dev/null || true
         $DOLT_SQL -q "GRANT CLONE_ADMIN ON *.* TO 'root'@'%';" 2>/dev/null && echo "root@%: CLONE_ADMIN OK" || true
