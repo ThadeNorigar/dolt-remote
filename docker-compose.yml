@@ -12,10 +12,9 @@ services:
       - dolt_data:/var/lib/dolt
       - ./entrypoint.sh:/entrypoint.sh:ro
       - ./init-databases.sh:/init-databases.sh:ro
-    ports:
-      - "50051:8080"
     expose:
-      - "3306"
+      - "8080"   # RemoteAPI (gRPC) — Caddy proxied :50051 → hier
+      - "3306"   # SQL Server — nur intern
     networks:
       - proxy
 
